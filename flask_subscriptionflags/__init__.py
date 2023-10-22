@@ -119,7 +119,7 @@ class SubscriptionFlag(object):
     except ValueError:  # handler wasn't in the list, pretend we don't notice
       pass
 
-  def check(self, subscription):
+  def check(self, company_id, subscription):
     """ Loop through all our subscription flag checkers and return true if any of them are true.
 
     The order of handlers matters - we will immediately return True if any handler returns true.
@@ -128,7 +128,7 @@ class SubscriptionFlag(object):
     found = False
     for handler in self.handlers:
       try:
-        if handler(subscription):
+        if handler(company_id, subscription):
           return True
       except StopCheckingSubscriptionFlags:
         return False
@@ -148,13 +148,13 @@ class SubscriptionFlag(object):
     return False
 
 
-def is_active(subscription):
+def is_active(company_id, subscription):
   """ Check if a subscription is active """
 
   if current_app:
     subscription_flagger = current_app.extensions.get(EXTENSION_NAME)
     if subscription_flagger:
-      return subscription_flagger.check(subscription)
+      return subscription_flagger.check(company_id, subscription)
     else:
       raise AssertionError("Oops. This application doesn't have the Flask-SubscriptionFlag extention installed.")
 
@@ -163,7 +163,7 @@ def is_active(subscription):
     return False
 
 
-def is_active_subscription(subscription, redirect_to=None, redirect=None):
+def is_active_subscription(company_id, subscription, redirect_to=None, redirect=None):
   """
   Decorator for Flask views. If a subscription is off, it can either return a 404 or redirect to a URL if you'd rather.
   """
@@ -171,7 +171,7 @@ def is_active_subscription(subscription, redirect_to=None, redirect=None):
     @wraps(func)
     def wrapped(*args, **kwargs):
 
-      if not is_active(subscription):
+      if not is_active(company_id, subscription):
         url = redirect_to
         if redirect:
           url = url_for(redirect)
