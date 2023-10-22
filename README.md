@@ -1,33 +1,13 @@
-Flask FeatureFlags
+Flask-SubscriptionFlags
+Adapted from Flask FeatureFlags
 ===================
 
-[![PyPI version](https://badge.fury.io/py/Flask_Featureflags.svg)](http://badge.fury.io/py/Flask_Featureflags) [![Build Status](https://travis-ci.org/trustrachel/Flask-FeatureFlags.png)](https://travis-ci.org/trustrachel/Flask-FeatureFlags) [![Coverage Status](https://coveralls.io/repos/trustrachel/Flask-FeatureFlags/badge.png?branch=master)](https://coveralls.io/r/trustrachel/Flask-FeatureFlags?branch=master)
-
-This is a Flask extension that adds feature flagging to your applications. This lets you turn parts of your site on or off based on configuration.
-
-It's useful for any setup where you deploy from trunk but want to hide unfinished features from your users, such as continuous integration builds.
-
-You can also extend it to do simple a/b testing or whitelisting.
-
-Installation
-============
-
-Installation is easy with pip:
-
-    pip install flask_featureflags
-
-To install from source, download the source code, then run this:
-
-    python setup.py install
-
-Flask-FeatureFlags supports Python 2.6, 2.7, and 3.3+ with experimental support for PyPy.
-
-Version 0.1 of Flask-FeatureFlags supports Python 2.5 (but not Python 3), so use that version if you need it. Be aware that both Flask and Jinja have dropped support for Python 2.5.
+This is a Flask extension that adds subscription-based flagging to your applications. This lets you turn parts of your site on or off based on a user's subscription.
 
 Docs
 ====
 
-For the most complete and up-to-date documentation, please see: [https://flask-featureflags.readthedocs.org/en/latest/](https://flask-featureflags.readthedocs.org/en/latest/) 
+For similar documentation, please see: [https://flask-featureflags.readthedocs.org/en/latest/](https://flask-featureflags.readthedocs.org/en/latest/) 
 
 Setup
 =====

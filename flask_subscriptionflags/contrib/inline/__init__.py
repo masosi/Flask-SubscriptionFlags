@@ -1,18 +1,18 @@
 from flask import current_app
-from flask_featureflags import FEATURE_FLAGS_CONFIG
-from flask_featureflags import NoFeatureFlagFound
-from flask_featureflags import log
+from flask_subscriptionflags import SUBSCRIPTION_FLAGS_CONFIG
+from flask_subscriptionflags import NoSubscriptionFlagFound
+from flask_subscriptionflags import log
 
 
-class InlineFeatureFlag(object):
-  def __call__(self, feature):
+class InlineSubscriptionFlag(object):
+  def __call__(self, subscription):
     if not current_app:
-      log.warn("Got a request to check for {feature} but we're outside the request context. Returning False".format(feature=feature))
+      log.warn("Got a request to check for {subscription} but we're outside the request context. Returning False".format(subscription=subscription))
       return False
 
-    feature_cfg = "{prefix}_{feature}".format(prefix=FEATURE_FLAGS_CONFIG, feature=feature)
+    subscription_cfg = "{prefix}_{subscription}".format(prefix=SUBSCRIPTION_FLAGS_CONFIG, subscription=subscription)
 
     try:
-      return current_app.config[feature_cfg]
+      return current_app.config[subscription_cfg]
     except KeyError:
-      raise NoFeatureFlagFound()
+      raise NoSubscriptionFlagFound()

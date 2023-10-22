@@ -1,5 +1,5 @@
 """
-(c) 2013 Rachel Sanders.  All rights reserved.
+(c) 2023 Tom Nicolosi.  All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-masosi-5
+masosi-1
 
 """
 
@@ -24,77 +24,77 @@ from flask import abort, current_app, url_for
 from flask import redirect as _redirect
 from flask.signals import Namespace
 
-__version__ = '0.7-dev'
+__version__ = '0.1'
 
-log = logging.getLogger('flask-featureflags')
+log = logging.getLogger('flask-subscriptionflags')
 
-RAISE_ERROR_ON_MISSING_FEATURES = 'RAISE_ERROR_ON_MISSING_FEATURES'
-FEATURE_FLAGS_CONFIG = 'FEATURE_FLAGS'
+RAISE_ERROR_ON_MISSING_SUBSCRIPTIONS = 'RAISE_ERROR_ON_MISSING_SUBSCRIPTIONS'
+SUBSCRIPTION_FLAGS_CONFIG = 'SUBSCRIPTION_FLAGS'
 
-EXTENSION_NAME = "FeatureFlags"
+EXTENSION_NAME = "SubscriptionFlags"
 
 
-class StopCheckingFeatureFlags(Exception):
-  """ Raise this inside of a feature flag handler to immediately return False and stop any further handers from running """
+class StopCheckingSubscriptionFlags(Exception):
+  """ Raise this inside of a subscription flag handler to immediately return False and stop any further handers from running """
   pass
 
 
-class NoFeatureFlagFound(Exception):
-  """ Raise this when the feature flag does not exist. """
+class NoSubscriptionFlagFound(Exception):
+  """ Raise this when the subscription flag does not exist. """
   pass
 
 
 _ns = Namespace()
-missing_feature = _ns.signal('missing-feature')
+missing_subscription = _ns.signal('missing-subscription')
 
 
-def AppConfigFlagHandler(feature=None):
-  """ This is the default handler. It checks for feature flags in the current app's configuration.
+def AppConfigFlagHandler(subscription=None):
+  """ This is the default handler. It checks for subscription flags in the current app's configuration.
 
-  For example, to have 'unfinished_feature' hidden in production but active in development:
+  For example, to have 'feature_subscription' hidden in production but active in development:
 
   config.py
 
   class ProductionConfig(Config):
 
-    FEATURE_FLAGS = {
-      'unfinished_feature' : False,
+    SUBSCRIPTION_FLAGS = {
+      'feature_subscription' : False,
     }
 
 
   class DevelopmentConfig(Config):
 
-    FEATURE_FLAGS = {
-      'unfinished_feature' : True,
+    SUBSCRIPTION_FLAGS = {
+      'feature_subscription' : True,
     }
 
   """
   if not current_app:
-    log.warn("Got a request to check for {feature} but we're outside the request context. Returning False".format(feature=feature))
+    log.warn("Got a request to check for {subscription} but we're outside the request context. Returning False".format(subscription=subscription))
     return False
 
   try:
-    return current_app.config[FEATURE_FLAGS_CONFIG][feature]
+    return current_app.config[SUBSCRIPTION_FLAGS_CONFIG][subscription]
   except (AttributeError, KeyError):
-    raise NoFeatureFlagFound()
+    raise NoSubscriptionFlagFound()
 
 
-class FeatureFlag(object):
+class SubscriptionFlag(object):
 
-  JINJA_TEST_NAME = 'active_feature'
+  JINJA_TEST_NAME = 'active_subscription'
 
   def __init__(self, app=None):
     if app is not None:
       self.init_app(app)
 
-    # The default out-of-the-box handler looks up features in Flask's app config.
+    # The default out-of-the-box handler looks up subscriptions in Flask's app config.
     self.handlers = [AppConfigFlagHandler]
 
   def init_app(self, app):
     """ Add ourselves into the app config and setup, and add a jinja function test """
 
-    app.config.setdefault(FEATURE_FLAGS_CONFIG, {})
-    app.config.setdefault(RAISE_ERROR_ON_MISSING_FEATURES, False)
+    app.config.setdefault(SUBSCRIPTION_FLAGS_CONFIG, {})
+    app.config.setdefault(RAISE_ERROR_ON_MISSING_SUBSCRIPTIONS, False)
 
     if hasattr(app, "add_template_global"):
       # flask 0.10 and higher has a proper hook
@@ -105,7 +105,7 @@ class FeatureFlag(object):
     app.extensions[EXTENSION_NAME] = self
 
   def clear_handlers(self):
-    """ Clear all handlers. This effectively turns every feature off."""
+    """ Clear all handlers. This effectively turns every subscription off."""
     self.handlers = []
 
   def add_handler(self, function):
@@ -119,76 +119,76 @@ class FeatureFlag(object):
     except ValueError:  # handler wasn't in the list, pretend we don't notice
       pass
 
-  def check(self, feature):
-    """ Loop through all our feature flag checkers and return true if any of them are true.
+  def check(self, subscription):
+    """ Loop through all our subscription flag checkers and return true if any of them are true.
 
     The order of handlers matters - we will immediately return True if any handler returns true.
 
-    If you want to a handler to return False and stop the chain, raise the StopCheckingFeatureFlags exception."""
+    If you want to a handler to return False and stop the chain, raise the StopCheckingSubscriptionFlags exception."""
     found = False
     for handler in self.handlers:
       try:
-        if handler(feature):
+        if handler(subscription):
           return True
-      except StopCheckingFeatureFlags:
+      except StopCheckingSubscriptionFlags:
         return False
-      except NoFeatureFlagFound:
+      except NoSubscriptionFlagFound:
         pass
       else:
         found = True
 
     if not found:
-      message = "No feature flag defined for {feature}".format(feature=feature)
-      if current_app.debug and current_app.config.get(RAISE_ERROR_ON_MISSING_FEATURES, False):
+      message = "No subscription flag defined for {subscription}".format(subscription=subscription)
+      if current_app.debug and current_app.config.get(RAISE_ERROR_ON_MISSING_SUBSCRIPTIONS, False):
         raise KeyError(message)
       else:
         log.info(message)
-        missing_feature.send(self, feature=feature)
+        missing_subscription.send(self, subscription=subscription)
 
     return False
 
 
-def is_active(feature):
-  """ Check if a feature is active """
+def is_active(subscription):
+  """ Check if a subscription is active """
 
   if current_app:
-    feature_flagger = current_app.extensions.get(EXTENSION_NAME)
-    if feature_flagger:
-      return feature_flagger.check(feature)
+    subscription_flagger = current_app.extensions.get(EXTENSION_NAME)
+    if subscription_flagger:
+      return subscription_flagger.check(subscription)
     else:
-      raise AssertionError("Oops. This application doesn't have the Flask-FeatureFlag extention installed.")
+      raise AssertionError("Oops. This application doesn't have the Flask-SubscriptionFlag extention installed.")
 
   else:
-    log.warn("Got a request to check for {feature} but we're running outside the request context. Check your setup. Returning False".format(feature=feature))
+    log.warn("Got a request to check for {subscription} but we're running outside the request context. Check your setup. Returning False".format(subscription=subscription))
     return False
 
 
-def is_active_feature(feature, redirect_to=None, redirect=None):
+def is_active_subscription(subscription, redirect_to=None, redirect=None):
   """
-  Decorator for Flask views. If a feature is off, it can either return a 404 or redirect to a URL if you'd rather.
+  Decorator for Flask views. If a subscription is off, it can either return a 404 or redirect to a URL if you'd rather.
   """
-  def _is_active_feature(func):
+  def _is_active_subscription(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
 
-      if not is_active(feature):
+      if not is_active(subscription):
         url = redirect_to
         if redirect:
           url = url_for(redirect)
 
         if url:
-          log.info('Feature {feature} is off, redirecting to {url}'.format(feature=feature, url=url))
+          log.info('Subscription {subscription} is off, redirecting to {url}'.format(subscription=subscription, url=url))
           return _redirect(url, code=302)
         else:
-          log.info('Feature {feature} is off, aborting request'.format(feature=feature))
+          log.info('Subscription {subscription} is off, aborting request'.format(subscription=subscription))
           abort(404)
 
       return func(*args, **kwargs)
     return wrapped
-  return _is_active_feature
+  return _is_active_subscription
 
 
-# Silence that annoying No handlers could be found for logger "flask-featureflags"
+# Silence that annoying No handlers could be found for logger "flask-subscriptionflags"
 class NullHandler(logging.Handler):
   def emit(self, record):
     pass
