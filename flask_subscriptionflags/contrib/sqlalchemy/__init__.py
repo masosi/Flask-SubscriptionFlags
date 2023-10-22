@@ -11,13 +11,13 @@ class SQLAlchemySubscriptionFlags(object):
       model = self._make_model(db)
     self.model = model
 
-  def __call__(self, subscription=None):
+  def __call__(self, company_id=None, subscription=None):
     if not current_app:
       log.warn("Got a request to check for {subscription} but we're outside the request context. Returning False".format(subscription=subscription))
       return False
 
     try:
-      return self.model.check(subscription)
+      return self.model.check(company_id, subscription)
     except NoResultFound:
       raise NoSubscriptionFlagFound()
 

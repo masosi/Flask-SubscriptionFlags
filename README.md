@@ -3,6 +3,7 @@ Adapted from Flask FeatureFlags
 ===================
 
 This is a Flask extension that adds subscription-based flagging to your applications. This lets you turn parts of your site on or off based on a user's subscription.
+This is modified from Flask FeatureFlags to handle company_id field for looking up company subscriptions
 
 Docs
 ====
