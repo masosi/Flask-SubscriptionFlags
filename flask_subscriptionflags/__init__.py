@@ -48,7 +48,7 @@ _ns = Namespace()
 missing_subscription = _ns.signal('missing-subscription')
 
 
-def AppConfigFlagHandler(subscription=None):
+def AppConfigFlagHandler(company_id=None, subscription=None):
   """ This is the default handler. It checks for subscription flags in the current app's configuration.
 
   For example, to have 'feature_subscription' hidden in production but active in development:
