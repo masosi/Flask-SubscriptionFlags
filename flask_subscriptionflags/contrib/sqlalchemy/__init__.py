@@ -25,6 +25,8 @@ class SQLAlchemySubscriptionFlags(object):
   def _make_model(self, db):
 
     class SubscriptionFlag(db.Model):
+      __table_args__ = {'extend_existing': True}
+
       id = Column(Integer, primary_key=True)
       company_id = Column(Integer, nullable=False)
       subscription = Column(String(255), nullable=False)
