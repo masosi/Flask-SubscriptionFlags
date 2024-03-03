@@ -27,12 +27,14 @@ class SQLAlchemySubscriptionFlags(object):
     class SubscriptionFlag(db.Model):
       id = Column(Integer, primary_key=True)
       company_id = Column(Integer, nullable=False)
-      subscription = Column(String(255), nullable=False, unique=True)
+      subscription = Column(String(255), nullable=False)
       is_active = Column(Boolean, default=False)
 
       @classmethod
       def check(cls, subscription):
-        r = cls.query.filter_by(company_id=current_user.company_id).filter_by(subscription=subscription).one()
+        r = cls.query.filter_by(company_id = current_user.company_id) \
+                      .filter_by(subscription = subscription) \
+                      .one()
         return r.is_active
 
     return SubscriptionFlag
